@@ -1,0 +1,16 @@
+;Exercise 2.20
+(define (same-parity first . check)
+  (define (parity-test? n)
+    (even? (+ first n)))
+  (define (iter rest)
+    (let ((n (car rest))
+        (next (cdr rest)))
+    (cond ((null? next)
+           (if (parity-test? n)
+               (cons n nil)
+               nil))
+          ((parity-test? n)
+           (cons n (iter next)))
+          (else
+           (iter next)))))
+  (cons first (iter check)))

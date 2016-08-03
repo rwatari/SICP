@@ -1,0 +1,12 @@
+;PSET 2
+(load "SICP/psets/ps2/curves.scm")
+
+
+;Exercise 2.2
+(define (vertical-line point length)
+  (lambda (t) 
+    (make-point (x-of point)
+                (+ (y-of point)
+                   (if (> t length)
+                       0
+                       t)))))

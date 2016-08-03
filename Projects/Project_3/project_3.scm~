@@ -1,0 +1,2 @@
+(load "search.scm")
+(load "generate.scm")

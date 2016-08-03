@@ -1,0 +1,20 @@
+; Continued Fraction exercises
+
+; 2.1
+;recursive
+(define (cont-frac-r n d k)
+  (define (rec index)
+    (if (> index k)
+        0
+        (/ (n index)
+           (+ (d index) (rec (+ index 1))))))
+  (rec 1))
+;iterative
+(define (cont-frac-i n d k)
+  (define (iter total rev-index)
+    (if (= rev-index 0)
+        total
+        (iter (/ (n rev-index)
+                 (+ (d rev-index) total))
+              (- rev-index 1))))
+  (iter 0 k))

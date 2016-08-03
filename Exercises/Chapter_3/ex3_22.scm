@@ -1,0 +1,31 @@
+; Exercise 3.22
+(define (make-queue)
+  (let ((front-ptr '())
+        (rear-ptr '()))
+    (define (empty-queue?)
+      (null? front-ptr))
+        
+    (define insert-queue!
+      (lambda (symbol)
+        (let ((new-pair (cons symbol '())))
+          (if (empty-queue?)
+              (begin (set! front-ptr new-pair)
+                     (set! rear-ptr new-pair)
+                     front-ptr)
+              (begin (set-cdr! rear-ptr new-pair)
+                     (set! rear-ptr new-pair)
+                     front-ptr)))))
+    (define delete-queue!
+      (lambda ()
+        (if (empty-queue?)
+            (error "Can't delete empty queue")
+            (begin (set! front-ptr (cdr front-ptr))
+                   front-ptr))))
+        
+    (define (dispatch m)
+      (cond ((eq? m 'insert)
+             insert-queue!)
+            ((eq? m 'delete)
+             delete-queue!)
+            (else front-ptr)))
+    dispatch))
