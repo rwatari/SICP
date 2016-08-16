@@ -28,12 +28,12 @@
 (define EGG-Atrium   (make-place 'EGG-Atrium))
 (define dungeon      (make-place 'dungeon))
 (define Building-36  (make-place 'Building-36))
-(define computer-lab (make-place 'computer-lab))
+(define computer-lab (make-card-locked-place 'computer-lab))
 (define Tech-Square  (make-place 'Tech-Square))
 (define gerry-office  (make-place 'gerry-office))
 (define albert-office  (make-place  'albert-office))
-(define dormitory    (make-place 'dormitory))
-
+(define dormitory    (make-student-residence 'dormitory))
+(define ec           (make-student-residence 'ec))
 ;; The following isolated place is defined in GAME.SCM too but redefined
 ;; here so you can just "zap" altered definitions there then re-evaluate this
 ;; file w/o worrying about forgetting to update any places.
@@ -60,6 +60,7 @@
 (can-go-both-ways Tech-Square   'up    'down  albert-office)
 (can-go-both-ways albert-office 'up    'down  gerry-office)
 (can-go-both-ways dormitory     'west  'east  Building-36)
+(can-go-both-ways dormitory     'north 'south ec)
 
 (can-go dungeon      'up    EGG-Atrium)
 
@@ -68,6 +69,7 @@
 
 (define albert   (make&install-person 'albert albert-office 3))
 (define gerry    (make&install-person 'gerry  gerry-office  2))
+(define raku     (make&install-person 'raku   dormitory     100))
 
 (define grendel  (make&install-troll  'grendel dungeon     4))
 
@@ -75,7 +77,10 @@
   (make&install-sd-card 'gerry-card gerry-office '888-12-3456))
 (define albert-card
   (make&install-sd-card 'albert-card albert-office '888-98-7654))
-
+(define raku-card
+  (make&install-sd-card 'raku-card dormitory '123-45-6789))
+(define late-homework
+  (make&install-thing 'late-homework dormitory))
 ;; The beginning of an ever-expanding game script
 ;;------------------------------------------------
 
