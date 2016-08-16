@@ -73,6 +73,9 @@
 
 (define grendel  (make&install-troll  'grendel dungeon     4))
 
+(define (report-stolen-card id)
+  (make&install-ogre 'ogre dungeon 1 id))
+
 (define gerry-card
   (make&install-sd-card 'gerry-card gerry-office '888-12-3456))
 (define albert-card
@@ -88,7 +91,11 @@
   (ask gerry 'take gerry-card)
   (ask gerry 'go 'down)
   (ask gerry 'go 'down)
+  (ask raku 'take raku-card)
+  (ask raku 'go 'west)
+  (report-stolen-card (ask raku-card 'id))
   )
+
 
 ;; ...now whenever you re-load this file, you can bring things up to
 ;; date by invoking PLAY-GAME.

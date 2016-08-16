@@ -552,7 +552,7 @@
                                                                       (is-a item 'sd-card?))
                                                                     poss)))
                                               (not (null? (filter (lambda (sd-card)
-                                                                    (memq (ask sd-card 'id) registered-ids))
+                                                                    (eq? (ask sd-card 'id) stolen-id))
                                                                   sd-cards))))))
                                         others)))
                        (if (not (null? offenders))
@@ -576,5 +576,5 @@
     (ask ogre 'install)
     ogre))
 
-()
+
 
