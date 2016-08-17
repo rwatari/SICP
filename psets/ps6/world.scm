@@ -84,6 +84,8 @@
   (make&install-sd-card 'raku-card dormitory '123-45-6789))
 (define late-homework
   (make&install-thing 'late-homework dormitory))
+
+(define big-brother (make-big-brother))
 ;; The beginning of an ever-expanding game script
 ;;------------------------------------------------
 
