@@ -586,21 +586,24 @@
     (lambda (message)
       (cond ((eq? message 'inform)
              (lambda (self id place)
-               (let ((info (cons id
-                                 place)))
+               (let ((info (cons id place)))
                  (cond ((or (null? (cdr access-data))
                             ;; no need to keep access-data if the time has changed
                             (not (eq? (current-time) (car access-data))))
                         (set! access-data (list (current-time) info)))
-                       (else (for-each (lambda (info-pair)
-                                         (let ((accessed-id    (car info-pair))
-                                               (accessed-place (cdr info-pair)))
-                                           (if (and (eq? accessed-id id)
-                                                    (not (eq? place accessed-place)))
-                                               (begin (report-stolen-card id)
-                                                 (display-message (list "Stolen card detected. 
-                                                                        Sending ogre for " id))))))
-                                       (cdr access-data)))))))
+                       (else
+                         (for-each (lambda (info-pair)
+                                     (let ((accessed-id    (car info-pair))
+                                           (accessed-place (cdr info-pair)))
+                                       (if (and (eq? accessed-id id)
+                                                (not (eq? place accessed-place)))
+                                           (begin (report-stolen-card id)
+                                                  (display-message
+                                                    (list "Stolen card detected. Sending ogre for card" id))))))
+                                   (cdr access-data))
+                         ;; problem here. it may add to the access data list if the same id is
+                         ;; used to enter the same place by the same person in a single time step
+                         (set-cdr! access-data (cons info (cdr access-data))))))))
             ((eq? message 'return-data)
              (lambda (self)
                access-data))
