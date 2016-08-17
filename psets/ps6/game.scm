@@ -491,16 +491,31 @@
 ;;; ------------------------------------------------------------------
 ;;; PSET problems
 
+(define (get-sd-cards person)
+  (let ((poss (ask person 'possessions)))
+    (filter (lambda (item)
+              (is-a item 'sd-card?))
+            poss)))
+
 ;;; card-locked-place will only accept a person if they are carrying an sd-card
 (define (make-card-locked-place name)
   (let ((place (make-place name)))
     (lambda (message)
       (cond ((eq? message 'accept-person?)
              (lambda (self person)
-               (let ((poss (ask person 'possessions)))
-                 (not (null? (filter (lambda (item)
-                                       (is-a item 'sd-card?))
-                                     poss))))))
+               (let ((sd-cards (get-sd-cards person)))                 
+                 (ask self 'check&inform sd-cards))))
+            ;; internal method to let in person with sd-cards and inform big-brother
+            ((eq? message 'check&inform)
+             (lambda (self sd-cards)
+               (if (null? sd-cards)
+                   #f
+                   (begin (for-each (lambda (card)
+                                      (ask big-brother 'inform
+                                           (ask card 'id)
+                                           self))
+                                    sd-cards)
+                          #t))))
             (else (get-method place message))))))
 
 ;;; student-residence will only allow people with registered cards to enter
@@ -510,13 +525,11 @@
     (lambda (message)
       (cond ((eq? message 'accept-person?)
              (lambda (self person)
-               (let ((poss (ask person 'possessions)))
-                 (let ((sd-cards (filter (lambda (item)
-                                           (is-a item 'sd-card?))
-                                         poss)))
-                   (not (null? (filter (lambda (sd-card)
-                                         (memq (ask sd-card 'id) registered-ids))
-                                       sd-cards)))))))
+               (let ((registered-cards (filter (lambda (sd-card)
+                                               (memq (ask sd-card 'id)
+                                                     registered-ids))
+                                             (get-sd-cards person))))
+                 (ask self 'check&inform registered-cards))))
             ;; register-card adds the id of an sd card currently in the student
             ;; residence
             ((eq? message 'register-card)
@@ -531,12 +544,14 @@
                                                       registered-ids))
                            (display-message (list (ask sd-card 'name)
                                                   "registered at" name))))))
+            ((eq? message 'registered-cards)
+             (lambda (self) registered-ids))
             (else (get-method card-place message))))))
 
 
 ;;; ogres are like trolls but only eat people with a stolen card
 (define (make-ogre name birthplace threshold stolen-id)
-  (let ((person (make-person name birthplace threshold)))
+  (let ((troll (make-troll name birthplace threshold)))
     (lambda (message)
       (cond ((eq? message 'act)
              (lambda (self)
@@ -547,29 +562,16 @@
                  (if (not (null? others))
                      (let ((offenders (filter
                                         (lambda (person)
-                                          (let ((poss (ask person 'possessions)))
-                                            (let ((sd-cards (filter (lambda (item)
-                                                                      (is-a item 'sd-card?))
-                                                                    poss)))
-                                              (not (null? (filter (lambda (sd-card)
-                                                                    (eq? (ask sd-card 'id) stolen-id))
-                                                                  sd-cards))))))
+                                          (let ((sd-cards (get-sd-cards person)))
+                                            (not (null? (filter (lambda (sd-card)
+                                                                  (eq? (ask sd-card 'id) stolen-id))
+                                                                sd-cards)))))
                                         others)))
                        (if (not (null? offenders))
-                       	(ask self 'eat-person (pick-random offenders))
-                       	((get-method person 'act) self)))
-                     ((get-method person 'act) self)))))
-            ((eq? message 'eat-person)
-             (lambda (self person)
-               (ask self 'say
-                    (list "Growl.... I'm going to eat you,"
-                          (ask person 'name)))
-               (go-to-heaven person)
-               (ask self 'say
-                    (list "Chomp chomp." (ask person 'name)
-                          "tastes yummy!"))
-               '*burp*))
-            (else (get-method person message))))))
+                           (ask self 'eat-person (pick-random offenders))
+                       	((get-method troll 'act) self)))
+                     ((get-method troll 'act) self)))))
+            (else (get-method troll message))))))
 
 (define (make&install-ogre name birthplace threshold stolen-id)
   (let ((ogre  (make-ogre name birthplace threshold stolen-id)))
