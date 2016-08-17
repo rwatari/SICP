@@ -576,5 +576,31 @@
     (ask ogre 'install)
     ogre))
 
-
+;;; big-brother is a new object which calls report-stolen-card (in world.scm)
+(define (make-big-brother)
+  ;; access-data is a headed list where the head is the last time 
+  ;; big-brother was informed
+  (let ((access-data (list (current-time))))
+    (lambda (message)
+      (cond ((eq? message 'inform)
+             (lambda (self id place)
+               (let ((info (cons id
+                                 place)))
+                 (cond ((or (null? (cdr access-data))
+                            ;; no need to keep access-data if the time has changed
+                            (not (eq? (current-time) (car access-data))))
+                        (set! access-data (list (current-time) info)))
+                       (else (for-each (lambda (info-pair)
+                                         (let ((accessed-id    (car info-pair))
+                                               (accessed-place (cdr info-pair)))
+                                           (if (and (eq? accessed-id id)
+                                                    (not (eq? place accessed-place)))
+                                               (begin (report-stolen-card id)
+                                                 (display-message (list "Stolen card detected. 
+                                                                        Sending ogre for " id))))))
+                                       (cdr access-data)))))))
+            ((eq? message 'return-data)
+             (lambda (self)
+               access-data))
+            (else (no-method 'big-brother))))))
 
